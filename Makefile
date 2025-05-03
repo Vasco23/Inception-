@@ -1,29 +1,37 @@
-all: build up
+COLOR_RESET =	\033[0m
+COLOR_GREEN =	\033[32m
 
-build :
-		mkdir -p /home/vasco/data/wordpress /home/vasco/data/mariadb
-		docker compose build
+# /data/ folder for (Data Persistence), and (Docker Volume Binding)
+all:
+	@mkdir -p /home/vasco/data/wordpress/;
+	@mkdir -p /home/vasco/data/mariadb/;
+	@echo "[$(COLOR_GREEN)info$(COLOR_RESET)]: Created /data/"
+	@docker compose -f /home/vasco/Desktop/Inception/srcs/docker-compose.yaml up -d --build > /dev/null
+	@echo "[$(COLOR_GREEN)info$(COLOR_RESET)]: Compose Up"
 
-up :
-	docker compose up -d
-
-start: 
-	docker-compose -f docker-compose.yml start
-
-down :
-	docker compose down -v
-
-
-clean : down
-		docker container prune --force
-		docker network prune --force
-		docker image prune -a --force
-		docker volume prune -a --force
-		docker builder prune -a --force
-		rm -rf /home/vasco/data/wordpress/* /home/vasco/data/mariadb/*
-		
-
-
-fclean : down clean
+down:
+	@docker compose -f ./srcs/docker compose.yaml down > /dev/null
+	@echo "[$(COLOR_GREEN)info$(COLOR_RESET)]: Compose Down"
 
 re: fclean all
+
+fclean: clean
+	@sudo rm -rf /home/vasco/data;
+	@echo "[$(COLOR_GREEN)info$(COLOR_RESET)]: Removed /data/"
+
+clean:
+	@if [ -n "$$(docker ps -aq)" ]; then docker rm -f $$(docker ps -aq) > /dev/null; fi
+	@docker system prune -a -f --volumes > /dev/null
+	@@if [ -n "$$(docker volume ls -q)" ]; then docker volume rm $$(docker volume ls -q) > /dev/null; fi
+	@echo "[$(COLOR_GREEN)info$(COLOR_RESET)]: Docker Clean"
+
+# docker ps: List running containers
+# 	-a: List all containers
+#	-q: Quiet Mode, list only the ID's
+
+# docker rm -f: force stops and removes all containers
+# docker system prune -a -f --volumes: Removes all unused containers, images, networks, build cache and volumes.
+
+# check nginx ports
+# sudo netstat -tulnp | grep nginx
+# ss -tulnp | grep nginx
