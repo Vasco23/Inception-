@@ -7,6 +7,9 @@ build :
 up :
 	docker compose up -d
 
+start: 
+	docker-compose -f docker-compose.yml start
+
 down :
 	docker compose down -v
 
@@ -17,6 +20,8 @@ clean : down
 		docker image prune -a --force
 		docker volume prune -a --force
 		docker builder prune -a --force
+		rm -rf /home/vasco/data/wordpress/* /home/vasco/data/mariadb/*
+		
 
 
 fclean : down clean
